@@ -3,7 +3,6 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    """Programmanyň sazlamalary"""
     gemini_api_key: str
     host: str = "0.0.0.0"
     port: int = 8000

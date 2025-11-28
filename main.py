@@ -40,7 +40,7 @@ except Exception as e:
 
 def create_medical_prompt(question: str, age: int = None, gender: str = None) -> str:
     """Lukmançylyk soragy üçin prompt döretmek"""
-    prompt = f"""Sen tejribeli türkmen lukman. Hassanyň soragyna jogap bermeli. 
+    prompt = f"""Sen tejribeli türkmen lukmany. Hassanyň soragyna jogap bermeli. 
 Jogabyňy türkmen dilinde, aňsat we düşnükli dil bilen bermeli.
 
 DUÝDURYŞ: Hassaň HÖKMANY SURATDA hakyky lukmana ýa-da keselhanä ýüz tutmalydygyny aýtmagy unutma.

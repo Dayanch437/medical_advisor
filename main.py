@@ -28,10 +28,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Gemini API-ni sazlamak
+# Gemini API-ni sazlamak   - models/gemini-2.0-flash-thinking-exp-1219
 try:
     genai.configure(api_key=settings.gemini_api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     logger.info("Gemini API üstünlikli birikdirildi")
 except Exception as e:
     logger.error(f"Gemini API birikmesinde ýalňyşlyk: {str(e)}")

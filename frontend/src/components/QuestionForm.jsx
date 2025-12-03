@@ -45,8 +45,8 @@ const QuestionForm = ({ onAdviceReceived }) => {
       className="medical-card border-l-4 border-l-blue-500"
       title={
         <div className="flex items-center gap-2">
-          <QuestionCircleOutlined className="text-2xl text-blue-500" />
-          <span className="text-lg">Soragy ýazyň</span>
+          <QuestionCircleOutlined className="text-lg sm:text-xl md:text-2xl text-blue-500" />
+          <span className="text-base sm:text-lg">Soragy ýazyň</span>
         </div>
       }
     >
@@ -57,7 +57,7 @@ const QuestionForm = ({ onAdviceReceived }) => {
           type="error"
           closable
           onClose={() => setError(null)}
-          className="mb-4"
+          className="mb-3 sm:mb-4 text-xs sm:text-sm"
         />
       )}
 
@@ -69,7 +69,7 @@ const QuestionForm = ({ onAdviceReceived }) => {
       >
         <Form.Item
           name="question"
-          label="Näme kömek gerek?"
+          label={<span className="text-xs sm:text-sm font-medium">Näme kömek gerek?</span>}
           rules={[
             { required: true, message: 'Soragyňyzy ýazyň!' },
             { min: 10, message: 'Sorag azyndan 10 simwol bolmaly!' },
@@ -77,18 +77,20 @@ const QuestionForm = ({ onAdviceReceived }) => {
           ]}
         >
           <TextArea
-            rows={5}
+            rows={4}
             placeholder="Mysal: Kelläm agyrýar we gyzzyrma bar, näme etmeli?"
             disabled={loading}
             showCount
             maxLength={1000}
+            className="text-sm sm:text-base"
           />
         </Form.Item>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Form.Item
             name="age"
-            label="Ýaşyňyz (hökmän däl)"
+            label={<span className="text-xs sm:text-sm font-medium">Ýaşyňyz (hökmän däl)</span>}
+            className="mb-3 sm:mb-4"
           >
             <InputNumber
               min={0}
@@ -96,18 +98,20 @@ const QuestionForm = ({ onAdviceReceived }) => {
               placeholder="Mysal: 30"
               disabled={loading}
               prefix={<CalendarOutlined />}
-              className="w-full"
+              className="w-full text-sm sm:text-base"
             />
           </Form.Item>
 
           <Form.Item
             name="gender"
-            label="Jynsynyz (hökmän däl)"
+            label={<span className="text-xs sm:text-sm font-medium">Jynsynyz (hökmän däl)</span>}
+            className="mb-3 sm:mb-4"
           >
             <Select
               placeholder="Saýlaň"
               disabled={loading}
               suffixIcon={<UserOutlined />}
+              className="text-sm sm:text-base"
             >
               <Option value="erkek">Erkek</Option>
               <Option value="aýal">Aýal</Option>
@@ -122,7 +126,7 @@ const QuestionForm = ({ onAdviceReceived }) => {
             loading={loading}
             icon={<SendOutlined />}
             size="large"
-            className="w-full md:w-auto"
+            className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8"
           >
             {loading ? 'Garaşyň...' : 'Maslahat Al'}
           </Button>

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, List, Tag, Typography, Spin, Alert, Button, Modal, Pagination } from 'antd';
-import { HistoryOutlined, ClockCircleOutlined, UserOutlined, RobotOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { HistoryOutlined, ClockCircleOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { medicalAPI } from '../services/api';
 import dayjs from 'dayjs';
-import 'dayjs/locale/tk'; // Turkmen locale if available, fallback to default
 
 const { Text, Paragraph } = Typography;
 
@@ -57,10 +56,24 @@ const History = () => {
     return dayjs(dateString).format('DD.MM.YYYY HH:mm');
   };
 
+  const getTextLength = () => {
+    if (typeof window === 'undefined') return 100;
+    if (window.innerWidth < 640) return 50;
+    if (window.innerWidth < 1024) return 80;
+    return 100;
+  };
+
+  const getModalWidth = () => {
+    if (typeof window === 'undefined') return 700;
+    if (window.innerWidth < 640) return '95%';
+    if (window.innerWidth < 768) return '85%';
+    return 700;
+  };
+
   if (loading && history.length === 0) {
     return (
       <Card className="medical-card">
-        <div className="text-center py-8">
+        <div className="text-center py-6 sm:py-8">
           <Spin size="large" tip="Taryh ýüklenýär..." />
         </div>
       </Card>
@@ -81,15 +94,15 @@ const History = () => {
         className="medical-card border-l-4 border-l-purple-500"
         title={
           <div className="flex items-center gap-2">
-            <HistoryOutlined className="text-2xl text-purple-500" />
-            <span className="text-lg">Soraglar Taryhy</span>
+            <HistoryOutlined className="text-lg sm:text-xl md:text-2xl text-purple-500" />
+            <span className="text-base sm:text-lg">Soraglar Taryhy</span>
           </div>
         }
       >
         {history.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <HistoryOutlined className="text-4xl mb-2" />
-            <p>Heniz sorag tapylmady</p>
+          <div className="text-center py-6 sm:py-8 text-gray-500">
+            <HistoryOutlined className="text-3xl sm:text-4xl mb-2" />
+            <p className="text-sm sm:text-base">Heniz sorag tapylmady</p>
           </div>
         ) : (
           <>
@@ -98,23 +111,23 @@ const History = () => {
               renderItem={(item) => (
                 <List.Item
                   key={item.id}
-                  className="cursor-pointer hover:bg-gray-50 transition-colors px-4 rounded"
+                  className="cursor-pointer hover:bg-gray-50 transition-colors px-2 sm:px-4 py-3 rounded"
                   onClick={() => showDetails(item)}
                 >
                   <List.Item.Meta
-                    avatar={<RobotOutlined className="text-2xl text-blue-500" />}
+                    avatar={<RobotOutlined className="text-xl sm:text-2xl text-blue-500" />}
                     title={
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Text strong className="flex-1">
-                          {item.question.substring(0, 100)}
-                          {item.question.length > 100 ? '...' : ''}
+                        <Text strong className="flex-1 text-xs sm:text-sm md:text-base">
+                          {item.question.substring(0, getTextLength())}
+                          {item.question.length > getTextLength() ? '...' : ''}
                         </Text>
-                        <Tag color="blue">#{item.id}</Tag>
+                        <Tag color="blue" className="text-xs">#{item.id}</Tag>
                       </div>
                     }
                     description={
                       <div className="space-y-1">
-                        <div className="flex items-center gap-4 flex-wrap text-xs">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap text-xs">
                           <span>
                             <ClockCircleOutlined className="mr-1" />
                             {formatDate(item.created_at)}
@@ -126,11 +139,11 @@ const History = () => {
                             </span>
                           )}
                           {item.gender && (
-                            <Tag color={item.gender === 'erkek' ? 'blue' : 'pink'}>
+                            <Tag color={item.gender === 'erkek' ? 'blue' : 'pink'} className="text-xs">
                               {item.gender}
                             </Tag>
                           )}
-                          <Tag color="green">{item.ai_model}</Tag>
+                          <Tag color="green" className="text-xs hidden sm:inline">{item.ai_model}</Tag>
                         </div>
                       </div>
                     }
@@ -147,6 +160,8 @@ const History = () => {
                 onChange={handlePageChange}
                 showSizeChanger={false}
                 showTotal={(total) => `Jemi: ${total} sorag`}
+                simple={typeof window !== 'undefined' && window.innerWidth < 640}
+                size={typeof window !== 'undefined' && window.innerWidth < 640 ? 'small' : 'default'}
               />
             </div>
           </>
@@ -156,65 +171,53 @@ const History = () => {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <RobotOutlined className="text-xl text-blue-500" />
-            <span className="text-lg">Sorag #{selectedItem?.id}</span>
+            <RobotOutlined className="text-blue-500" />
+            <span className="text-sm sm:text-base">Sorag #{selectedItem?.id}</span>
           </div>
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={[
-          <Button key="close" type="primary" onClick={() => setModalVisible(false)}>
+          <Button key="close" onClick={() => setModalVisible(false)} className="text-xs sm:text-sm">
             Ýap
           </Button>,
         ]}
-        width={800}
+        width={getModalWidth()}
+        centered={typeof window !== 'undefined' && window.innerWidth < 640}
       >
         {selectedItem && (
-          <div className="space-y-5">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-l-blue-500">
-              <Text strong className="block mb-3 text-blue-700 text-base flex items-center gap-2">
-                <QuestionCircleOutlined />
-                Sorag:
-              </Text>
-              <Paragraph className="!mb-0 text-base leading-relaxed">
+          <div className="space-y-3 sm:space-y-4">
+            <div>
+              <Text strong className="block mb-2 text-xs sm:text-sm">Sorag:</Text>
+              <Paragraph className="bg-gray-50 p-2 sm:p-3 rounded text-xs sm:text-sm">
                 {selectedItem.question}
               </Paragraph>
             </div>
 
-            <div className="bg-green-50 p-4 rounded-lg border-l-4 border-l-green-500">
-              <Text strong className="block mb-3 text-green-700 text-base flex items-center gap-2">
-                <RobotOutlined />
-                AI Maslahat:
-              </Text>
-              <div className="prose max-w-none">
-                <Paragraph className="!mb-0 text-base whitespace-pre-wrap leading-relaxed text-gray-800">
-                  {selectedItem.advice}
-                </Paragraph>
-              </div>
+            <div>
+              <Text strong className="block mb-2 text-xs sm:text-sm">Maslahat:</Text>
+              <Paragraph className="bg-blue-50 p-2 sm:p-3 rounded whitespace-pre-wrap text-xs sm:text-sm max-h-60 sm:max-h-96 overflow-y-auto">
+                {selectedItem.advice}
+              </Paragraph>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <Text strong className="block mb-3 text-gray-700">Maglumat:</Text>
-              <div className="flex gap-4 flex-wrap">
-                <Tag color="blue" className="px-3 py-1">
-                  <ClockCircleOutlined className="mr-1" />
-                  {formatDate(selectedItem.created_at)}
+            <div className="flex gap-2 sm:gap-4 flex-wrap text-xs">
+              <span>
+                <ClockCircleOutlined className="mr-1" />
+                {formatDate(selectedItem.created_at)}
+              </span>
+              {selectedItem.age && (
+                <span>
+                  <UserOutlined className="mr-1" />
+                  Ýaş: {selectedItem.age}
+                </span>
+              )}
+              {selectedItem.gender && (
+                <Tag color={selectedItem.gender === 'erkek' ? 'blue' : 'pink'} className="text-xs">
+                  {selectedItem.gender}
                 </Tag>
-                {selectedItem.age && (
-                  <Tag color="cyan" className="px-3 py-1">
-                    <UserOutlined className="mr-1" />
-                    Ýaş: {selectedItem.age}
-                  </Tag>
-                )}
-                {selectedItem.gender && (
-                  <Tag color={selectedItem.gender === 'erkek' ? 'blue' : 'pink'} className="px-3 py-1">
-                    {selectedItem.gender === 'erkek' ? '👨 Erkek' : '👩 Aýal'}
-                  </Tag>
-                )}
-                <Tag color="green" className="px-3 py-1">
-                  🤖 {selectedItem.ai_model}
-                </Tag>
-              </div>
+              )}
+              <Tag color="green" className="text-xs">{selectedItem.ai_model}</Tag>
             </div>
           </div>
         )}

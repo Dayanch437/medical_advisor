@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 
 class MedicalQuestion(BaseModel):
@@ -37,3 +38,35 @@ class HealthStatus(BaseModel):
     status: str
     message: str
     gemini_connected: bool
+
+
+class QueryHistoryItem(BaseModel):
+    """Bir sorag we jogap üçin taryhyň bir bölegi"""
+    id: int
+    question: str
+    age: Optional[int]
+    gender: Optional[str]
+    advice: str
+    ai_model: str  # model_used -> ai_model (namespace conflict fix)
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "question": "Kelläm agyrýar we gyzzyrma bar",
+                "age": 30,
+                "gender": "erkek",
+                "advice": "Siziň alamatlaryňyz...",
+                "ai_model": "gemini-2.5-flash",
+                "created_at": "2025-11-29T10:30:00"
+            }
+        }
+
+
+class QueryHistory(BaseModel):
+    """Ähli soraglaryň we jogaplaryň sanawy"""
+    total: int
+    queries: list[QueryHistoryItem]
+

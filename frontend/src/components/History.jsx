@@ -72,8 +72,8 @@ const History = () => {
 
   if (loading && history.length === 0) {
     return (
-      <Card className="medical-card">
-        <div className="text-center py-6 sm:py-8">
+      <Card className="medical-card animate-fade-in" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="text-center py-8 sm:py-12">
           <Spin size="large" tip="Taryh ýüklenýär..." />
         </div>
       </Card>
@@ -82,7 +82,7 @@ const History = () => {
 
   if (error) {
     return (
-      <Card className="medical-card">
+      <Card className="medical-card animate-fade-in" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <Alert message="Ýalňyşlyk" description={error} type="error" showIcon />
       </Card>
     );
@@ -91,16 +91,21 @@ const History = () => {
   return (
     <>
       <Card
-        className="medical-card border-l-4 border-l-purple-500"
+        className="medical-card border-t-4 border-t-purple-500 animate-fade-in"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         title={
-          <div className="flex items-center gap-2">
-            <HistoryOutlined className="text-lg sm:text-xl md:text-2xl text-purple-500" />
-            <span className="text-base sm:text-lg">Soraglar Taryhy</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+              <HistoryOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+            </div>
+            <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Soraglar Taryhy
+            </span>
           </div>
         }
       >
         {history.length === 0 ? (
-          <div className="text-center py-6 sm:py-8 text-gray-500">
+          <div className="text-center py-6 sm:py-8" style={{ color: 'var(--text-tertiary)' }}>
             <HistoryOutlined className="text-3xl sm:text-4xl mb-2" />
             <p className="text-sm sm:text-base">Heniz sorag tapylmady</p>
           </div>
@@ -111,7 +116,7 @@ const History = () => {
               renderItem={(item) => (
                 <List.Item
                   key={item.id}
-                  className="cursor-pointer hover:bg-gray-50 transition-colors px-2 sm:px-4 py-3 rounded"
+                  className="cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 px-3 sm:px-4 py-3 sm:py-4 rounded-lg border border-transparent hover:border-blue-200 hover:shadow-md"
                   onClick={() => showDetails(item)}
                 >
                   <List.Item.Meta
@@ -143,7 +148,6 @@ const History = () => {
                               {item.gender}
                             </Tag>
                           )}
-                          <Tag color="green" className="text-xs hidden sm:inline">{item.ai_model}</Tag>
                         </div>
                       </div>
                     }
@@ -184,24 +188,36 @@ const History = () => {
         ]}
         width={getModalWidth()}
         centered={typeof window !== 'undefined' && window.innerWidth < 640}
+        styles={{
+          content: { background: 'var(--bg-card)' },
+          header: { background: 'var(--bg-card)', borderBottom: `1px solid var(--border-color)` }
+        }}
       >
         {selectedItem && (
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <Text strong className="block mb-2 text-xs sm:text-sm">Sorag:</Text>
-              <Paragraph className="bg-gray-50 p-2 sm:p-3 rounded text-xs sm:text-sm">
+              <Text strong className="block mb-2 text-xs sm:text-sm" style={{ color: 'var(--text-primary)' }}>Sorag:</Text>
+              <Paragraph className="p-2 sm:p-3 rounded text-xs sm:text-sm" style={{ 
+                background: 'var(--glass-bg)', 
+                color: 'var(--text-secondary)',
+                border: `1px solid var(--border-color)`
+              }}>
                 {selectedItem.question}
               </Paragraph>
             </div>
 
             <div>
-              <Text strong className="block mb-2 text-xs sm:text-sm">Maslahat:</Text>
-              <Paragraph className="bg-blue-50 p-2 sm:p-3 rounded whitespace-pre-wrap text-xs sm:text-sm max-h-60 sm:max-h-96 overflow-y-auto">
+              <Text strong className="block mb-2 text-xs sm:text-sm" style={{ color: 'var(--text-primary)' }}>Maslahat:</Text>
+              <Paragraph className="p-2 sm:p-3 rounded whitespace-pre-wrap text-xs sm:text-sm max-h-60 sm:max-h-96 overflow-y-auto" style={{ 
+                background: 'var(--glass-bg)', 
+                color: 'var(--text-secondary)',
+                border: `1px solid var(--border-color)`
+              }}>
                 {selectedItem.advice}
               </Paragraph>
             </div>
 
-            <div className="flex gap-2 sm:gap-4 flex-wrap text-xs">
+            <div className="flex gap-2 sm:gap-4 flex-wrap text-xs" style={{ color: 'var(--text-tertiary)' }}>
               <span>
                 <ClockCircleOutlined className="mr-1" />
                 {formatDate(selectedItem.created_at)}
@@ -217,7 +233,6 @@ const History = () => {
                   {selectedItem.gender}
                 </Tag>
               )}
-              <Tag color="green" className="text-xs">{selectedItem.ai_model}</Tag>
             </div>
           </div>
         )}

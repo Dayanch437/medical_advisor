@@ -1,13 +1,13 @@
+import { memo, useMemo } from 'react';
 import { Card, Alert, Divider, Typography, Space } from 'antd';
 import { MedicineBoxOutlined, WarningOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 
-const AdviceDisplay = ({ advice, disclaimer }) => {
+const AdviceDisplay = memo(({ advice, disclaimer }) => {
   if (!advice) return null;
 
-  // Parse the advice text to structure it better
-  const formatAdvice = (text) => {
+  const formatAdvice = useMemo(() => (text) => {
     // Helper function to remove all markdown formatting
     const removeMarkdown = (str) => {
       return str
@@ -54,39 +54,49 @@ const AdviceDisplay = ({ advice, disclaimer }) => {
     }
 
     return sections;
-  };
+  }, [advice]);
 
   const sections = formatAdvice(advice);
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 animate-fade-in">
       <Card 
-        className="medical-card border-l-4 border-l-green-500"
+        className="medical-card border-t-4 border-t-green-500 custom-scrollbar"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         title={
-          <div className="flex items-center gap-2">
-            <MedicineBoxOutlined className="text-lg sm:text-xl md:text-2xl text-green-500" />
-            <span className="text-base sm:text-lg">Lukmançylyk Maslahat</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-2 rounded-lg">
+              <MedicineBoxOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+            </div>
+            <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              Lukmançylyk Maslahat
+            </span>
           </div>
         }
       >
         <Space direction="vertical" size="large" className="w-full">
           {sections.length > 0 ? (
             sections.map((section, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                <Title level={5} className="!mb-2 sm:!mb-3 text-blue-600 flex items-center gap-2 text-sm sm:text-base">
-                  <CheckCircleOutlined className="text-base sm:text-lg" />
-                  {section.title}
+              <div key={idx} className="rounded-xl p-4 sm:p-5 border hover:shadow-md transition-all duration-300" style={{
+                background: 'var(--glass-bg)',
+                borderColor: 'var(--border-color)'
+              }}>
+                <Title level={5} className="!mb-3 sm:!mb-4 flex items-center gap-2 text-sm sm:text-base md:text-lg" style={{ color: 'var(--text-primary)' }}>
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-1.5 rounded-lg">
+                    <CheckCircleOutlined className="text-sm sm:text-base text-white" />
+                  </div>
+                  <span className="font-semibold">{section.title}</span>
                 </Title>
-                <div className="space-y-2 ml-4 sm:ml-6">
+                <div className="space-y-2 ml-0 sm:ml-2">
                   {section.content.map((item, itemIdx) => (
                     <div key={itemIdx}>
                       {item.type === 'bullet' ? (
                         <div className="flex gap-2 items-start">
                           <span className="text-green-500 mt-1 text-sm sm:text-base">•</span>
-                          <Text className="flex-1 text-xs sm:text-sm">{item.text}</Text>
+                          <Text className="flex-1 text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>{item.text}</Text>
                         </div>
                       ) : (
-                        <Paragraph className="!mb-2 text-gray-700 text-xs sm:text-sm">
+                        <Paragraph className="!mb-2 text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
                           {item.text}
                         </Paragraph>
                       )}
@@ -98,7 +108,7 @@ const AdviceDisplay = ({ advice, disclaimer }) => {
           ) : (
             // Fallback for unstructured text
             <div className="prose max-w-none">
-              <Paragraph className="text-base whitespace-pre-wrap text-gray-700 leading-relaxed">
+              <Paragraph className="text-base whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {advice.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '')}
               </Paragraph>
             </div>
@@ -137,6 +147,8 @@ const AdviceDisplay = ({ advice, disclaimer }) => {
       />
     </div>
   );
-};
+});
+
+AdviceDisplay.displayName = 'AdviceDisplay';
 
 export default AdviceDisplay;

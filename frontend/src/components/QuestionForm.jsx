@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Form, Input, InputNumber, Select, Button, Card, Alert, Spin } from 'antd';
 import { SendOutlined, UserOutlined, CalendarOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { medicalAPI } from '../services/api';
@@ -6,12 +6,12 @@ import { medicalAPI } from '../services/api';
 const { TextArea } = Input;
 const { Option } = Select;
 
-const QuestionForm = ({ onAdviceReceived }) => {
+const QuestionForm = memo(({ onAdviceReceived }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = useCallback(async (values) => {
     setLoading(true);
     setError(null);
 
@@ -38,15 +38,20 @@ const QuestionForm = ({ onAdviceReceived }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, onAdviceReceived]);
 
   return (
     <Card 
-      className="medical-card border-l-4 border-l-blue-500"
+      className="medical-card border-t-4 border-t-blue-500"
+      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
       title={
-        <div className="flex items-center gap-2">
-          <QuestionCircleOutlined className="text-lg sm:text-xl md:text-2xl text-blue-500" />
-          <span className="text-base sm:text-lg">Soragy ýazyň</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="bg-blue-500 p-2 rounded-lg">
+            <QuestionCircleOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+          </div>
+          <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Soragy ýazyň
+          </span>
         </div>
       }
     >
@@ -56,8 +61,9 @@ const QuestionForm = ({ onAdviceReceived }) => {
           description={error}
           type="error"
           closable
+          showIcon
           onClose={() => setError(null)}
-          className="mb-3 sm:mb-4 text-xs sm:text-sm"
+          className="mb-3 sm:mb-4 text-xs sm:text-sm animate-fade-in"
         />
       )}
 
@@ -69,7 +75,7 @@ const QuestionForm = ({ onAdviceReceived }) => {
       >
         <Form.Item
           name="question"
-          label={<span className="text-xs sm:text-sm font-medium">Näme kömek gerek?</span>}
+          label={<span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Näme kömek gerek?</span>}
           rules={[
             { required: true, message: 'Soragyňyzy ýazyň!' },
             { min: 10, message: 'Sorag azyndan 10 simwol bolmaly!' },
@@ -83,13 +89,18 @@ const QuestionForm = ({ onAdviceReceived }) => {
             showCount
             maxLength={1000}
             className="text-sm sm:text-base"
+            style={{ 
+              background: 'var(--bg-card)', 
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-color)'
+            }}
           />
         </Form.Item>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Form.Item
             name="age"
-            label={<span className="text-xs sm:text-sm font-medium">Ýaşyňyz (hökmän däl)</span>}
+            label={<span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Ýaşyňyz (hökmän däl)</span>}
             className="mb-3 sm:mb-4"
           >
             <InputNumber
@@ -99,12 +110,17 @@ const QuestionForm = ({ onAdviceReceived }) => {
               disabled={loading}
               prefix={<CalendarOutlined />}
               className="w-full text-sm sm:text-base"
+              style={{ 
+                background: 'var(--bg-card)', 
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-color)'
+              }}
             />
           </Form.Item>
 
           <Form.Item
             name="gender"
-            label={<span className="text-xs sm:text-sm font-medium">Jynsynyz (hökmän däl)</span>}
+            label={<span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Jynsynyz (hökmän däl)</span>}
             className="mb-3 sm:mb-4"
           >
             <Select
@@ -135,11 +151,13 @@ const QuestionForm = ({ onAdviceReceived }) => {
 
       {loading && (
         <div className="mt-4 text-center">
-          <Spin tip="AI maslahatyny taýýarlaýar..." size="large" />
+          <Spin tip={<span style={{ color: 'var(--text-secondary)' }}>Maslahat taýýarlanýar...</span>} size="large" />
         </div>
       )}
     </Card>
   );
-};
+});
+
+QuestionForm.displayName = 'QuestionForm';
 
 export default QuestionForm;

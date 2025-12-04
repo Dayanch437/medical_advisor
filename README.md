@@ -500,23 +500,15 @@ VITE_API_URL=http://localhost:8000
 
 
 
-1. Fork the repository**Ýatda saklaň:** Bu programma diňe maglumat maksady bilen döredildi. Hakyky hassalyk ýagdaýynda HÖKMANY SURATDA lukman bilen maslahatlaşyň! 🏥
-
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)# medical_advisor
-
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+**Ýatda saklaň:** Bu programma diňe maglumat maksady bilen döredildi. Hakyky hassalyk ýagdaýynda HÖKMANY SURATDA lukman bilen maslahatlaşyň! 🏥
 
 ## 📄 License
 
-This project is open source and available under the MIT License.
+Bu taslamanyň açyk kodly we MIT ygtyýarnamasynda elýeterlidir.
 
-## 👨‍💻 Author
+## 👨‍💻 Awtor
 
 **Dayanch437**
-- GitHub: [@Dayanch437](https://github.com/Dayanch437)
-- Repository: [medical_advisor](https://github.com/Dayanch437/medical_advisor)
 
 ## 🙏 Acknowledgments
 

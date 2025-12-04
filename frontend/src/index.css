@@ -267,6 +267,103 @@ html {
   color: #ff4d4f !important;
 }
 
+/* Ant Design Alert - Dark Mode Support */
+.ant-alert {
+  background: var(--glass-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ant-alert-message {
+  color: var(--text-primary) !important;
+}
+
+.ant-alert-description {
+  color: var(--text-secondary) !important;
+}
+
+/* Ant Design Spin - Dark Mode Support */
+.ant-spin-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Ant Design List - Dark Mode Support */
+.ant-list-item {
+  border-color: var(--border-color) !important;
+}
+
+/* Ant Design Pagination - Dark Mode Support */
+.ant-pagination-total-text {
+  color: var(--text-secondary) !important;
+}
+
+.ant-pagination-item {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ant-pagination-item a {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination-item:hover {
+  border-color: #1890ff !important;
+}
+
+.ant-pagination-item-active {
+  border-color: #1890ff !important;
+}
+
+.ant-pagination-item-active a {
+  color: #1890ff !important;
+}
+
+.ant-pagination-prev button,
+.ant-pagination-next button {
+  color: var(--text-primary) !important;
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ant-pagination-disabled button {
+  color: var(--text-tertiary) !important;
+}
+
+/* Improve placeholder visibility in dark mode */
+.dark .ant-input::placeholder,
+.dark .ant-input-number::placeholder,
+.dark .ant-select-selection-placeholder {
+  color: var(--text-tertiary) !important;
+  opacity: 0.6;
+}
+
+.dark .ant-input-number-input::placeholder {
+  color: var(--text-tertiary) !important;
+  opacity: 0.7;
+}
+
+/* Ensure placeholder is visible for all inputs */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.65;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.75;
+}
+
+/* Textarea character counter in dark mode */
+.ant-input-textarea-show-count::after {
+  color: var(--text-tertiary) !important;
+}
+
+.dark .ant-input-textarea-show-count::after {
+  color: var(--text-tertiary) !important;
+  opacity: 0.7;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from {

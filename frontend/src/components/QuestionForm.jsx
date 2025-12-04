@@ -42,11 +42,15 @@ const QuestionForm = ({ onAdviceReceived }) => {
 
   return (
     <Card 
-      className="medical-card border-l-4 border-l-blue-500"
+      className="medical-card border-t-4 border-t-blue-500"
       title={
-        <div className="flex items-center gap-2">
-          <QuestionCircleOutlined className="text-lg sm:text-xl md:text-2xl text-blue-500" />
-          <span className="text-base sm:text-lg">Soragy ýazyň</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="bg-blue-500 p-2 rounded-lg">
+            <QuestionCircleOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+          </div>
+          <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Soragy ýazyň
+          </span>
         </div>
       }
     >
@@ -56,8 +60,9 @@ const QuestionForm = ({ onAdviceReceived }) => {
           description={error}
           type="error"
           closable
+          showIcon
           onClose={() => setError(null)}
-          className="mb-3 sm:mb-4 text-xs sm:text-sm"
+          className="mb-3 sm:mb-4 text-xs sm:text-sm animate-fade-in"
         />
       )}
 
@@ -135,7 +140,7 @@ const QuestionForm = ({ onAdviceReceived }) => {
 
       {loading && (
         <div className="mt-4 text-center">
-          <Spin tip="AI maslahatyny taýýarlaýar..." size="large" />
+          <Spin tip="Maslahat taýýarlanýar..." size="large" />
         </div>
       )}
     </Card>

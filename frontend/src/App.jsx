@@ -30,30 +30,41 @@ const HomePage = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 sm:p-6 md:p-8 text-white">
-        <div className="max-w-3xl">
-          <Title level={1} className="!text-white !mb-2 sm:!mb-4 !text-xl sm:!text-2xl md:!text-3xl lg:!text-4xl">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
+        
+        <div className="max-w-3xl relative z-10">
+          <Title level={1} className="!text-white !mb-3 sm:!mb-4 !text-2xl sm:!text-3xl md:!text-4xl lg:!text-5xl !font-bold">
             🏥 Türkmen Lukmançylyk Maslahat
           </Title>
-          <Text className="text-sm sm:text-base md:text-lg text-white opacity-90 block">
-            Google Gemini AI ulanyp, türkmen dilinde lukmançylyk maslahaty
+          <Text className="text-sm sm:text-base md:text-lg text-white opacity-95 block mb-4">
+            Türkmen dilinde professional lukmançylyk maslahaty almak
           </Text>
-          <div className="mt-3 md:mt-4 flex flex-wrap gap-2">
-            <Tag color="green" className="text-xs sm:text-sm">AI Esasly</Tag>
-            <Tag color="blue" className="text-xs sm:text-sm">Türkmen Dili</Tag>
-            <Tag color="purple" className="text-xs sm:text-sm">Mugt</Tag>
+          <div className="mt-4 md:mt-5 flex flex-wrap gap-2 sm:gap-3">
+            <Tag className="text-xs sm:text-sm px-3 py-1 bg-white bg-opacity-20 border-white border-opacity-40 text-white font-medium">
+              ⚡ Çalt Jogap
+            </Tag>
+            <Tag className="text-xs sm:text-sm px-3 py-1 bg-white bg-opacity-20 border-white border-opacity-40 text-white font-medium">
+              🇹🇲 Türkmen Dili
+            </Tag>
+            <Tag className="text-xs sm:text-sm px-3 py-1 bg-white bg-opacity-20 border-white border-opacity-40 text-white font-medium">
+              💯 Mugt
+            </Tag>
+            <Tag className="text-xs sm:text-sm px-3 py-1 bg-white bg-opacity-20 border-white border-opacity-40 text-white font-medium">
+              🔒 Ygtybarly
+            </Tag>
           </div>
         </div>
       </div>
 
-      {/* Question Form */}
-      <QuestionForm onAdviceReceived={handleAdviceReceived} />
+      <div className="animate-slide-up">
+        <QuestionForm onAdviceReceived={handleAdviceReceived} />
+      </div>
 
-      {/* Advice Display */}
       {currentAdvice && (
-        <div id="advice-section">
+        <div id="advice-section" className="animate-fade-in">
           <AdviceDisplay 
             advice={currentAdvice.advice} 
             disclaimer={currentAdvice.disclaimer} 
@@ -89,7 +100,7 @@ const AppContent = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             <HeartOutlined className="text-xl sm:text-2xl text-red-500" />
             <Title level={4} className="!mb-0 !text-gray-800 !text-base sm:!text-lg md:!text-xl">
-              Lukman AI
+              Lukman Maslahat
             </Title>
           </div>
           <Menu

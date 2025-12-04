@@ -59,25 +59,31 @@ const AdviceDisplay = ({ advice, disclaimer }) => {
   const sections = formatAdvice(advice);
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 animate-fade-in">
       <Card 
-        className="medical-card border-l-4 border-l-green-500"
+        className="medical-card border-t-4 border-t-green-500 custom-scrollbar"
         title={
-          <div className="flex items-center gap-2">
-            <MedicineBoxOutlined className="text-lg sm:text-xl md:text-2xl text-green-500" />
-            <span className="text-base sm:text-lg">Lukmançylyk Maslahat</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-2 rounded-lg">
+              <MedicineBoxOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+            </div>
+            <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              Lukmançylyk Maslahat
+            </span>
           </div>
         }
       >
         <Space direction="vertical" size="large" className="w-full">
           {sections.length > 0 ? (
             sections.map((section, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                <Title level={5} className="!mb-2 sm:!mb-3 text-blue-600 flex items-center gap-2 text-sm sm:text-base">
-                  <CheckCircleOutlined className="text-base sm:text-lg" />
-                  {section.title}
+              <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-5 border border-blue-100 hover:shadow-md transition-all duration-300">
+                <Title level={5} className="!mb-3 sm:!mb-4 flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-1.5 rounded-lg">
+                    <CheckCircleOutlined className="text-sm sm:text-base text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-800">{section.title}</span>
                 </Title>
-                <div className="space-y-2 ml-4 sm:ml-6">
+                <div className="space-y-2 ml-0 sm:ml-2">
                   {section.content.map((item, itemIdx) => (
                     <div key={itemIdx}>
                       {item.type === 'bullet' ? (

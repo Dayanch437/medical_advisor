@@ -72,8 +72,8 @@ const History = () => {
 
   if (loading && history.length === 0) {
     return (
-      <Card className="medical-card">
-        <div className="text-center py-6 sm:py-8">
+      <Card className="medical-card animate-fade-in">
+        <div className="text-center py-8 sm:py-12">
           <Spin size="large" tip="Taryh ýüklenýär..." />
         </div>
       </Card>
@@ -82,7 +82,7 @@ const History = () => {
 
   if (error) {
     return (
-      <Card className="medical-card">
+      <Card className="medical-card animate-fade-in">
         <Alert message="Ýalňyşlyk" description={error} type="error" showIcon />
       </Card>
     );
@@ -91,11 +91,15 @@ const History = () => {
   return (
     <>
       <Card
-        className="medical-card border-l-4 border-l-purple-500"
+        className="medical-card border-t-4 border-t-purple-500 animate-fade-in"
         title={
-          <div className="flex items-center gap-2">
-            <HistoryOutlined className="text-lg sm:text-xl md:text-2xl text-purple-500" />
-            <span className="text-base sm:text-lg">Soraglar Taryhy</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+              <HistoryOutlined className="text-lg sm:text-xl md:text-2xl text-white" />
+            </div>
+            <span className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Soraglar Taryhy
+            </span>
           </div>
         }
       >
@@ -111,7 +115,7 @@ const History = () => {
               renderItem={(item) => (
                 <List.Item
                   key={item.id}
-                  className="cursor-pointer hover:bg-gray-50 transition-colors px-2 sm:px-4 py-3 rounded"
+                  className="cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 px-3 sm:px-4 py-3 sm:py-4 rounded-lg border border-transparent hover:border-blue-200 hover:shadow-md"
                   onClick={() => showDetails(item)}
                 >
                   <List.Item.Meta
@@ -143,7 +147,6 @@ const History = () => {
                               {item.gender}
                             </Tag>
                           )}
-                          <Tag color="green" className="text-xs hidden sm:inline">{item.ai_model}</Tag>
                         </div>
                       </div>
                     }
@@ -217,7 +220,6 @@ const History = () => {
                   {selectedItem.gender}
                 </Tag>
               )}
-              <Tag color="green" className="text-xs">{selectedItem.ai_model}</Tag>
             </div>
           </div>
         )}

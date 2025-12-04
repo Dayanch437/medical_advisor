@@ -1,31 +1,31 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import declarative_base, sessionmaker
 from typing import AsyncGenerator
 
-# SQLite databaza URL
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
+
 DATABASE_URL = "sqlite+aiosqlite:///./medical_advice.db"
 
-# Async engine we session
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,  # SQL sözlemlerini görkezmek üçin (development)
-    future=True
+    echo=False,
+    future=True,
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20,
+    connect_args={
+        "timeout": 30,
+        "check_same_thread": False,
+    },
 )
 
-# Async session maker
 async_session_maker = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+    engine, class_=AsyncSession, expire_on_commit=False
 )
 
-# Base class for models
 Base = declarative_base()
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Databaza sessiýasyny almak üçin dependency"""
     async with async_session_maker() as session:
         try:
             yield session
@@ -38,6 +38,5 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db():
-    """Databazany işe girizmeк we tablitsalary döretmek"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

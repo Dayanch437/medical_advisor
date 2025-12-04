@@ -273,11 +273,10 @@ async def get_query_history(
 
         count_stmt = select(func.count(MedicalQuery.id))
 
-        result, count_result = await asyncio.gather(
-            db.execute(stmt), db.execute(count_stmt)
-        )
-
+        result = await db.execute(stmt)
         rows = result.all()
+        
+        count_result = await db.execute(count_stmt)
         total = count_result.scalar() or 0
 
         history_items = [

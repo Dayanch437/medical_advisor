@@ -54,6 +54,26 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 try:
     genai.configure(api_key=settings.gemini_api_key)
+    
+    safety_settings = [
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_NONE",
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_NONE",
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_NONE",
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_NONE",
+        },
+    ]
+    
     model = genai.GenerativeModel(
         "gemini-2.5-flash",
         generation_config={
@@ -62,10 +82,11 @@ try:
             "top_k": 40,
             "max_output_tokens": 2048,
         },
+        safety_settings=safety_settings,
     )
-    logger.info("Gemini API üstünlikli birikdirildi")
+    logger.info("API üstünlikli işe girizildi")
 except Exception as e:
-    logger.error(f"Gemini API birikmesinde ýalňyşlyk: {str(e)}")
+    logger.error(f"API başlatmakda ýalňyşlyk: {str(e)}")
     model = None
 
 
@@ -108,7 +129,7 @@ async def health_check():
     """API saglygy barlamak"""
     if model is None:
         return HealthStatus(
-            status="ýalňyş", message="Gemini API birikdirilmedi", gemini_connected=False
+            status="ýalňyş", message="Hyzmat birikdirilmedi", gemini_connected=False
         )
 
     return HealthStatus(
@@ -128,10 +149,10 @@ async def get_medical_advice(
     - **gender**: Jynsy - 'erkek' ýa-da 'aýal' (hökmän däl)
     """
     if model is None:
-        logger.error("Gemini model elýeterli däl")
+        logger.error("AI model elýeterli däl")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
+            detail="Hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
         )
 
     try:
@@ -142,11 +163,28 @@ async def get_medical_advice(
         logger.info(f"Sorag alyndy: {question.question[:50]}...")
 
         response = await asyncio.to_thread(model.generate_content, prompt)
+        
+        if not response.candidates:
+            logger.warning("Jogap alynmady - kandidat ýok")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Soragy başgaça ýazyp synanyşyň.",
+            )
+        
+        candidate = response.candidates[0]
+        
+        if candidate.finish_reason != 1:
+            logger.warning(f"Jogap tamamlanmady. Sebäp: {candidate.finish_reason}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Soragy has anyk ýazyp synanyşyň.",
+            )
 
         if not response.text:
+            logger.warning("Boş jogap alyndy")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="AI-den jogap alynmady. Soňrak synanyşyň.",
+                detail="Jogap alynmady. Soňrak synanyşyň.",
             )
 
         logger.info("Üstünlikli jogap berildi")
@@ -174,12 +212,21 @@ Gyssagly ýagdaýlarda derrew tiz kömek çagyryň!
 
         return MedicalAdvice(advice=response.text, disclaimer=disclaimer)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Maslahat berişde ýalňyşlyk: {str(e)}")
         await db.rollback()
+        
+        if "response.text" in str(e) or "finish_reason" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Soragy başgaça ýazyp synanyşyň.",
+            )
+        
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Maslahat berişde ýalňyşlyk ýüze çykdy: {str(e)}",
+            detail="Maslahat berişde ýalňyşlyk ýüze çykdy. Soňrak synanyşyň.",
         )
 
 

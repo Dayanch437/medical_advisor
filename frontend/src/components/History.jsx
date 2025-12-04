@@ -123,7 +123,7 @@ const History = () => {
                     avatar={<RobotOutlined className="text-xl sm:text-2xl text-blue-500" />}
                     title={
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Text strong className="flex-1 text-xs sm:text-sm md:text-base">
+                        <Text strong className="flex-1 text-xs sm:text-sm md:text-base" style={{ color: 'var(--text-primary)' }}>
                           {item.question.substring(0, getTextLength())}
                           {item.question.length > getTextLength() ? '...' : ''}
                         </Text>
@@ -132,7 +132,7 @@ const History = () => {
                     }
                     description={
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap text-xs">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap text-xs" style={{ color: 'var(--text-secondary)' }}>
                           <span>
                             <ClockCircleOutlined className="mr-1" />
                             {formatDate(item.created_at)}

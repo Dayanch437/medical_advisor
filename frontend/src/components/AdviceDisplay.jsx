@@ -120,21 +120,21 @@ const AdviceDisplay = memo(({ advice, disclaimer }) => {
         message={
           <div className="flex items-center gap-2">
             <WarningOutlined className="text-lg" />
-            <Text strong className="text-base">MÖHÜM DUÝDURYŞ</Text>
+            <Text strong className="text-base" style={{ color: 'var(--text-primary)' }}>MÖHÜM DUÝDURYŞ</Text>
           </div>
         }
         description={
           <div className="space-y-2 sm:space-y-3 mt-2">
-            <Paragraph className="!mb-2 text-xs sm:text-sm leading-relaxed">
+            <Paragraph className="!mb-2 text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               <InfoCircleOutlined className="mr-2" />
               Bu maslahat diňe maglumat maksady bilen berilýär we hakyky lukmançylyk 
               diagnozyny ýa-da bejergini çalyşmaýar.
             </Paragraph>
-            <Paragraph className="!mb-2 text-xs sm:text-sm leading-relaxed font-semibold text-red-600">
+            <Paragraph className="!mb-2 text-xs sm:text-sm leading-relaxed font-semibold" style={{ color: '#dc2626' }}>
               ⚠️ Hassalyk ýüze çyksa ýa-da alamatlaryňyz dowam etse, HÖKMANY SURATDA 
               ýerli lukmana ýa-da keselhanä ýüz tutuň.
             </Paragraph>
-            <Paragraph className="!mb-0 text-xs sm:text-sm leading-relaxed">
+            <Paragraph className="!mb-0 text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               🚨 Gyssagly ýagdaýlarda (güýçli agyry, dem alyş kynçylygy, ýokary gyzzyrma) 
               derrew tiz kömek çagyryň!
             </Paragraph>
@@ -144,6 +144,7 @@ const AdviceDisplay = memo(({ advice, disclaimer }) => {
         showIcon
         icon={<WarningOutlined className="text-lg sm:text-xl" />}
         className="border-l-4 border-l-orange-500"
+        style={{ background: 'var(--glass-bg)', borderColor: 'var(--border-color)' }}
       />
     </div>
   );

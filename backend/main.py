@@ -58,29 +58,29 @@ try:
     safety_settings = [
         {
             "category": "HARM_CATEGORY_HARASSMENT",
-            "threshold": "BLOCK_NONE",
+            "threshold": "BLOCK_ONLY_HIGH",
         },
         {
             "category": "HARM_CATEGORY_HATE_SPEECH",
-            "threshold": "BLOCK_NONE",
+            "threshold": "BLOCK_ONLY_HIGH",
         },
         {
             "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "threshold": "BLOCK_NONE",
+            "threshold": "BLOCK_ONLY_HIGH",
         },
         {
             "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-            "threshold": "BLOCK_NONE",
+            "threshold": "BLOCK_ONLY_HIGH",
         },
     ]
     
     model = genai.GenerativeModel(
         "gemini-2.5-flash",
         generation_config={
-            "temperature": 0.7,
+            "temperature": 0.9,
             "top_p": 0.95,
-            "top_k": 40,
-            "max_output_tokens": 2048,
+            "top_k": 64,
+            "max_output_tokens": 8192,
         },
         safety_settings=safety_settings,
     )
@@ -92,24 +92,32 @@ except Exception as e:
 
 def create_medical_prompt(question: str, age: int = None, gender: str = None) -> str:
     prompt = f"""
-    Sen tejribeli türkmen lukmany. Aşakdaky hassanyň soragyna anyk, düşnükli we ýönekeý dilde jogap ber.
+Siz tejribeli we mylakatly türkmen lukman boluň. Aşakdaky adamyň saglyk barada soragyna düşnükli, 
+ýönekeý we peýdaly maslahat beriň.
 
-    DUÝDURYŞ: Jogabyňyň içinde hökman maslahat görnüşinde aýdyp geç:
-    "Hakykydan hem saglyk ýagdaýyňy barlatmak üçin hakyky lukmana ýa-da keselhanä ýüz tutmak hökmanydyr."
+Maglumatlar:
+- Ýaşy: {age if age else 'mälim däl'}
+- Jynsy: {gender if gender else 'mälim däl'}
 
-    Eger maglumatlar berlen bolsa, olaryň esasynda jogap ber:
-    - Hassanyň ýaşy: {age}
-    - Jynsy: {gender}
+Soragy:
+{question}
 
-    Hassanyň soragy:
-    {question}
+Jogabyňyzda aşakdakylary bermegiňizi haýyş edýäris:
 
-    Jogabyňda hökman aşakdakylary goş:
-    1) Mümkin sebäpler we düşündirişi
-    2) Öýde edilip bilinjek ýönekeý çäreler
-    3) Haçan hökmany suratda lukmana ýüz tutmaly
-    Jogabyňy diňe türkmen dilinde ýaz.
+1. Mümkin sebäpler:
+   - Bu ýagdaýyň döräp biljek umumy sebäpleri näme?
+   
+2. Öý maslahatlary:
+   - Öýde edilip bilinjek ýeňil çäreler we maslahatlar
+   
+3. Lukman maslahat:
+   - Haçan lukmana gitmek gerek?
+   - Näme alamatlarda gyssagly kömek gerek?
 
+MÖHÜM: Soňunda hökman belläň: "Bu maslahatlar umumy maglumat üçin. Anyk diagnoz we bejeriş üçin 
+lukmana ýüz tutmagyňyzy maslahat berýäris."
+
+Türkmen dilinde, mylakatly we düşnükli ýazyň.
     """
     return prompt
 
@@ -168,16 +176,29 @@ async def get_medical_advice(
             logger.warning("Jogap alynmady - kandidat ýok")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Soragy başgaça ýazyp synanyşyň.",
+                detail="Soragy has ýönekeý ýazyp synanyşyň. Mysal: 'Kelläm agyrýar, näme etmeli?'",
             )
         
         candidate = response.candidates[0]
         
         if candidate.finish_reason != 1:
-            logger.warning(f"Jogap tamamlanmady. Sebäp: {candidate.finish_reason}")
+            finish_reason_messages = {
+                2: "Soragy has umumy görnüşde ýazyň. Mysal: 'Kelläm agyrýar' ýerine 'Başym agyrýar, näme sebäp bolup biler?'",
+                3: "Sorag gaty uzyn. Has gysga ýazyň.",
+                4: "Sorag düşnüksiz. Has anyk düşündiriň.",
+                5: "Ulgam ýalňyşlygy. Soňrak synanyşyň."
+            }
+            reason_code = candidate.finish_reason
+            logger.warning(f"Jogap tamamlanmady. Sebäp: {reason_code}")
+            
+            detail_message = finish_reason_messages.get(
+                reason_code, 
+                "Soragy başgaça ýazyp synanyşyň."
+            )
+            
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Soragy has anyk ýazyp synanyşyň.",
+                detail=detail_message,
             )
 
         if not response.text:

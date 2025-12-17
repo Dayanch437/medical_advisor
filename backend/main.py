@@ -239,15 +239,24 @@ Gyssagly ýagdaýlarda derrew tiz kömek çagyryň!
         logger.error(f"Maslahat berişde ýalňyşlyk: {str(e)}")
         await db.rollback()
         
-        if "response.text" in str(e) or "finish_reason" in str(e):
+        error_message = str(e)
+        
+        # Check for API quota/rate limit errors
+        if "429" in error_message or "quota" in error_message.lower() or "rate limit" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Hyzmat häzirki wagtda elýeterli däl. Biraz wagtdan soň synanyşyň.",
+            )
+        
+        if "response.text" in error_message or "finish_reason" in error_message:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Soragy başgaça ýazyp synanyşyň.",
             )
         
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Maslahat berişde ýalňyşlyk ýüze çykdy. Soňrak synanyşyň.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
         )
 
 

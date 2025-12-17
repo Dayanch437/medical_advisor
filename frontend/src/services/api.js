@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://213.21.235.119:8002';
 
 const cache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000;

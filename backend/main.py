@@ -3,6 +3,8 @@ import logging
 from contextlib import asynccontextmanager
 
 import anthropic
+import httpx
+import os
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -53,7 +55,11 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 try:
-    claude_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    https_proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+    claude_client = anthropic.Anthropic(
+        api_key=settings.anthropic_api_key,
+        http_client=httpx.Client(trust_env=False, proxy=https_proxy),
+    )
     logger.info("Anthropic API üstünlikli işe girizildi")
 except Exception as e:
     logger.error(f"API başlatmakda ýalňyşlyk: {str(e)}")
@@ -322,5 +328,4 @@ async def get_query_by_id(query_id: int, db: AsyncSession = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True)

@@ -87,7 +87,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 def create_medical_prompt(question: str, age: int = None, gender: str = None) -> str:
     prompt = f"""
 Siz tejribeli we mylakatly türkmen lukman boluň. Aşakdaky adamyň saglyk barada soragyna düşnükli,
-ýönekeý we peýdaly maslahat beriň.
+ýönekeý we peýdaly maslahat beriň. Ýöne salam berme. Salamlaşmak bilen baglansyky sözlerden gaça duruň.
+Göniden we anyk jogap beriň, gysgaça düşündiriň. Ýaşy, jynsy we soragyň mazmuny esasynda maslahat beriň.
 
 Maglumatlar:
 - Ýaşy: {age if age else 'mälim däl'}

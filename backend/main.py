@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3-flash"
 
 
 @asynccontextmanager

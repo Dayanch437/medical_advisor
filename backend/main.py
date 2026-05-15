@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from google import genai
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 
 @asynccontextmanager
@@ -52,6 +53,11 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+for _var in ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"]:
+    _val = os.environ.get(_var, "")
+    if _val.startswith("socks://"):
+        os.environ[_var] = "socks5://" + _val[len("socks://"):]
 
 try:
     gemini_client = genai.Client(api_key=settings.gemini_api_key)

@@ -26,13 +26,42 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-GEMINI_MODEL = "gemini-3-flash"
+_SKIP_KEYWORDS = {"tts", "image", "robotics", "deep-research", "lyria", "banana", "computer-use", "customtools", "clip"}
+
+for _var in ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"]:
+    _val = os.environ.get(_var, "")
+    if _val.startswith("socks://"):
+        os.environ[_var] = "socks5://" + _val[len("socks://"):]
+
+try:
+    gemini_client = genai.Client(api_key=settings.gemini_api_key)
+    logger.info("Gemini API üstünlikli işe girizildi")
+except Exception as e:
+    logger.error(f"API başlatmakda ýalňyşlyk: {str(e)}")
+    gemini_client = None
+
+available_models: list[str] = []
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global available_models
     await init_db()
     logger.info("Databaza üstünlikli işe girizildi")
+
+    if gemini_client:
+        try:
+            available_models = [
+                m.name.replace("models/", "")
+                for m in gemini_client.models.list()
+                if "generateContent" in (m.supported_actions or [])
+                and not any(kw in m.name for kw in _SKIP_KEYWORDS)
+            ]
+            logger.info(f"Elýeterli modeller ({len(available_models)}): {available_models}")
+        except Exception as e:
+            logger.error(f"Modelleri almakda ýalňyşlyk: {e}")
+            available_models = ["gemini-2.5-flash"]
+
     yield
     logger.info("Programma ýapylýar")
 
@@ -53,18 +82,6 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-for _var in ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"]:
-    _val = os.environ.get(_var, "")
-    if _val.startswith("socks://"):
-        os.environ[_var] = "socks5://" + _val[len("socks://"):]
-
-try:
-    gemini_client = genai.Client(api_key=settings.gemini_api_key)
-    logger.info("Gemini API üstünlikli işe girizildi")
-except Exception as e:
-    logger.error(f"API başlatmakda ýalňyşlyk: {str(e)}")
-    gemini_client = None
 
 
 def create_medical_prompt(question: str, age: int = None, gender: str = None) -> str:
@@ -99,6 +116,27 @@ Türkmen dilinde, mylakatly we düşnükli ýazyň.
     return prompt
 
 
+async def generate_with_fallback(prompt: str) -> tuple[str, str]:
+    """Try each available model in order, skip on 429, raise on other errors."""
+    last_error = None
+    for model in available_models:
+        try:
+            response = await gemini_client.aio.models.generate_content(
+                model=model, contents=prompt
+            )
+            if model != available_models[0]:
+                logger.info(f"Jogap {model} modeli bilen alyndy")
+            return response.text, model
+        except Exception as e:
+            err = str(e)
+            if "429" in err or "resource_exhausted" in err.lower():
+                logger.warning(f"{model} limit aşdy, indiki model synanyşylýar...")
+                last_error = e
+                continue
+            raise
+    raise last_error or RuntimeError("Elýeterli model ýok")
+
+
 @app.get("/", response_model=HealthStatus)
 async def root():
     return HealthStatus(
@@ -123,7 +161,7 @@ async def health_check():
 async def get_medical_advice(
     question: MedicalQuestion, db: AsyncSession = Depends(get_db)
 ):
-    if gemini_client is None:
+    if gemini_client is None or not available_models:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
@@ -136,10 +174,7 @@ async def get_medical_advice(
 
         logger.info(f"Sorag alyndy: {question.question[:50]}...")
 
-        response = await gemini_client.aio.models.generate_content(
-            model=GEMINI_MODEL, contents=prompt
-        )
-        advice_text = response.text
+        advice_text, model_used = await generate_with_fallback(prompt)
 
         if not advice_text:
             logger.warning("Boş jogap alyndy")
@@ -148,7 +183,7 @@ async def get_medical_advice(
                 detail="Jogap alynmady. Soňrak synanyşyň.",
             )
 
-        logger.info("Üstünlikli jogap berildi")
+        logger.info(f"Üstünlikli jogap berildi [{model_used}]")
 
         db_query = MedicalQuery(
             question=question.question, age=question.age, gender=question.gender
@@ -157,7 +192,7 @@ async def get_medical_advice(
         await db.flush()
 
         db_response = AIResponse(
-            query_id=db_query.id, advice=advice_text, model_used=GEMINI_MODEL
+            query_id=db_query.id, advice=advice_text, model_used=model_used
         )
         db.add(db_response)
         await db.commit()
@@ -188,7 +223,7 @@ Gyssagly ýagdaýlarda derrew tiz kömek çagyryň!
         if "quota" in err or "rate" in err or "resource_exhausted" in err:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Hyzmat häzirki wagtda elýeterli däl. Biraz wagtdan soň synanyşyň.",
+                detail="Ähli modeller limit aşdy. Biraz wagtdan soň synanyşyň.",
             )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

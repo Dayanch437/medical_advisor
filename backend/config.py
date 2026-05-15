@@ -2,9 +2,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    anthropic_api_key: str
+    gemini_api_key: str
     host: str = "0.0.0.0"
     port: int = 8000
+    database_url: str = "sqlite+aiosqlite:///./medical_advice.db"
 
     class Config:
         env_file = ".env"

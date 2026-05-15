@@ -1,10 +1,7 @@
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-import anthropic
-import httpx
-import os
+from google import genai
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -27,6 +24,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+GEMINI_MODEL = "gemini-2.0-flash"
 
 
 @asynccontextmanager
@@ -55,20 +54,16 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 try:
-    https_proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
-    claude_client = anthropic.Anthropic(
-        api_key=settings.anthropic_api_key,
-        http_client=httpx.Client(trust_env=False, proxy=https_proxy),
-    )
-    logger.info("Anthropic API üstünlikli işe girizildi")
+    gemini_client = genai.Client(api_key=settings.gemini_api_key)
+    logger.info("Gemini API üstünlikli işe girizildi")
 except Exception as e:
     logger.error(f"API başlatmakda ýalňyşlyk: {str(e)}")
-    claude_client = None
+    gemini_client = None
 
 
 def create_medical_prompt(question: str, age: int = None, gender: str = None) -> str:
     prompt = f"""
-Siz tejribeli we mylakatly türkmen lukman boluň. Aşakdaky adamyň saglyk barada soragyna düşnükli, 
+Siz tejribeli we mylakatly türkmen lukman boluň. Aşakdaky adamyň saglyk barada soragyna düşnükli,
 ýönekeý we peýdaly maslahat beriň.
 
 Maglumatlar:
@@ -82,15 +77,15 @@ Jogabyňyzda aşakdakylary bermegiňizi haýyş edýäris:
 
 1. Mümkin sebäpler:
    - Bu ýagdaýyň döräp biljek umumy sebäpleri näme?
-   
+
 2. Öý maslahatlary:
    - Öýde edilip bilinjek ýeňil çäreler we maslahatlar
-   
+
 3. Lukman maslahat:
    - Haçan lukmana gitmek gerek?
    - Näme alamatlarda gyssagly kömek gerek?
 
-MÖHÜM: Soňunda hökman belläň: "Bu maslahatlar umumy maglumat üçin. Anyk diagnoz we bejeriş üçin 
+MÖHÜM: Soňunda hökman belläň: "Bu maslahatlar umumy maglumat üçin. Anyk diagnoz we bejeriş üçin
 lukmana ýüz tutmagyňyzy maslahat berýäris."
 
 Türkmen dilinde, mylakatly we düşnükli ýazyň.
@@ -100,22 +95,19 @@ Türkmen dilinde, mylakatly we düşnükli ýazyň.
 
 @app.get("/", response_model=HealthStatus)
 async def root():
-    """API baş sahypasy - ýagdaýy barlamak"""
     return HealthStatus(
         status="işleýär",
         message="Türkmen Lukmançylyk Maslahat API işleýär",
-        gemini_connected=claude_client is not None,
+        gemini_connected=gemini_client is not None,
     )
 
 
 @app.get("/health", response_model=HealthStatus)
 async def health_check():
-    """API saglygy barlamak"""
-    if claude_client is None:
+    if gemini_client is None:
         return HealthStatus(
             status="ýalňyş", message="Hyzmat birikdirilmedi", gemini_connected=False
         )
-
     return HealthStatus(
         status="sagdyn", message="Ähli hyzmatlar işleýär", gemini_connected=True
     )
@@ -125,15 +117,7 @@ async def health_check():
 async def get_medical_advice(
     question: MedicalQuestion, db: AsyncSession = Depends(get_db)
 ):
-    """
-    Lukmançylyk maslahat almak
-
-    - **question**: Hassanyň soragy (10-1000 simwol)
-    - **age**: Hassanyň ýaşy (hökmän däl)
-    - **gender**: Jynsy - 'erkek' ýa-da 'aýal' (hökmän däl)
-    """
-    if claude_client is None:
-        logger.error("AI model elýeterli däl")
+    if gemini_client is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
@@ -146,20 +130,10 @@ async def get_medical_advice(
 
         logger.info(f"Sorag alyndy: {question.question[:50]}...")
 
-        def call_claude():
-            return claude_client.messages.create(
-                model="claude-haiku-4-5",
-                max_tokens=8192,
-                messages=[{"role": "user", "content": prompt}],
-            )
-
-        response = await asyncio.to_thread(call_claude)
-
-        advice_text = ""
-        for block in response.content:
-            if block.type == "text":
-                advice_text = block.text
-                break
+        response = await gemini_client.aio.models.generate_content(
+            model=GEMINI_MODEL, contents=prompt
+        )
+        advice_text = response.text
 
         if not advice_text:
             logger.warning("Boş jogap alyndy")
@@ -177,7 +151,7 @@ async def get_medical_advice(
         await db.flush()
 
         db_response = AIResponse(
-            query_id=db_query.id, advice=advice_text, model_used="claude-haiku-4-5"
+            query_id=db_query.id, advice=advice_text, model_used=GEMINI_MODEL
         )
         db.add(db_response)
         await db.commit()
@@ -195,35 +169,21 @@ Gyssagly ýagdaýlarda derrew tiz kömek çagyryň!
 
     except HTTPException:
         raise
-    except anthropic.AuthenticationError:
-        logger.error("Anthropic API açary nädogry")
+    except Exception as e:
+        err = str(e).lower()
         await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="API açary nädogry. Administrator bilen habarlaşyň.",
-        )
-    except anthropic.RateLimitError:
-        logger.warning("Anthropic API rate limit")
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Hyzmat häzirki wagtda elýeterli däl. Biraz wagtdan soň synanyşyň.",
-        )
-    except anthropic.BadRequestError as e:
-        logger.error(f"Anthropic bad request: {str(e)}")
-        await db.rollback()
-        if "credit" in str(e).lower() or "balance" in str(e).lower():
+        logger.error(f"Maslahat berişde ýalňyşlyk: {str(e)}")
+
+        if "api_key" in err or "permission" in err or "auth" in err:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="API hasabynda karz ýok. Administrator bilen habarlaşyň.",
+                detail="API açary nädogry. Administrator bilen habarlaşyň.",
             )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Soragy başgaça ýazyp synanyşyň.",
-        )
-    except Exception as e:
-        logger.error(f"Maslahat berişde ýalňyşlyk: {str(e)}")
-        await db.rollback()
+        if "quota" in err or "rate" in err or "resource_exhausted" in err:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Hyzmat häzirki wagtda elýeterli däl. Biraz wagtdan soň synanyşyň.",
+            )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Hyzmat häzirki wagtda elýeterli däl. Soňrak synanyşyň.",
@@ -234,12 +194,6 @@ Gyssagly ýagdaýlarda derrew tiz kömek çagyryň!
 async def get_query_history(
     limit: int = 50, offset: int = 0, db: AsyncSession = Depends(get_db)
 ):
-    """
-    Müşderileriň soraglary we AI jogaplary taryhyny almak
-
-    - **limit**: Bir gezekde näçe ýazgy görkermeli (deslapky: 50)
-    - **offset**: Haýsy ýazgydan başlamaly (deslapky: 0)
-    """
     try:
         stmt = (
             select(MedicalQuery, AIResponse)
@@ -254,7 +208,7 @@ async def get_query_history(
 
         result = await db.execute(stmt)
         rows = result.all()
-        
+
         count_result = await db.execute(count_stmt)
         total = count_result.scalar() or 0
 
@@ -283,11 +237,6 @@ async def get_query_history(
 
 @app.get("/history/{query_id}", response_model=QueryHistoryItem)
 async def get_query_by_id(query_id: int, db: AsyncSession = Depends(get_db)):
-    """
-    Belli bir sorag we jogap ID boýunça almak
-
-    - **query_id**: Soragyň ID belgisi
-    """
     try:
         stmt = (
             select(MedicalQuery, AIResponse)
